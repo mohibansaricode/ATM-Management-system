@@ -6,7 +6,7 @@ String userPin = "";
 num userBalance = 0;
 List<Map<String, dynamic>> transtions = [];
 DateTime now = DateTime.now();
-num finalAmount = 0;
+num currentBalance = 0;
 
 void main() {
   // ASSIGNMENT 04 DART PROJECT
@@ -45,7 +45,7 @@ void main() {
 }
 
 signUp() {
-  print("Enter Your Name");
+  print("Enter Your Name :");
   userName = stdin.readLineSync()!.toUpperCase();
 
   bool isTrue = true;
@@ -78,19 +78,18 @@ signUp() {
 
   print("""
 
-
- =============================
- Account created successfully!
- =============================
-
+=============================
+Account created successfully!
+=============================
 
     """);
 
   print("""
 =============================
-    LOGIN ACCOUNT Press 1
+LOGIN ACCOUNT Press 1
 =============================
     """);
+
   print("""
 ==================================
 Check your Account Balance Press 2
@@ -99,7 +98,7 @@ Check your Account Balance Press 2
 
   print("""
 =============================
-       EXIT Press 3
+EXIT Press 3
 =============================
     """);
 
@@ -112,6 +111,7 @@ Check your Account Balance Press 2
  =====================================================
  Your Account Statement  
  NAME :  ${userDetails[0]["USER NAME"]}
+ Pin : ${userDetails[0]["USER PIN"]}
  CURRENT BALANCE :  ${userDetails[0]["USER BALANCE"]}
  =====================================================
 
@@ -178,8 +178,7 @@ PRESS 2 FOR EXIT
 }
 
 mainManu() {
-  while (true) {
-    print("""
+  print("""
 
 Welcome, $userName!
 
@@ -193,70 +192,96 @@ Welcome, $userName!
 Enter your choice:
 
 """);
-    String userChoice = stdin.readLineSync()!;
+  String userChoice = stdin.readLineSync()!;
 
-    if (userChoice == "6") {
-      print("logged Out");
-      exit(0);
-    } else if (userChoice == "1") {
-      checkBalance();
-    } else if (userChoice == "2") {
-      deposit();
-    } else if (userChoice == "3") {
-      withDraw();
-    } else if (userChoice == "4") {
-      showTransctions();
-    }
+  if (userChoice == "6") {
+    print("logged Out");
+    exit(0);
+  } else if (userChoice == "1") {
+    checkBalance();
+  } else if (userChoice == "2") {
+    deposit();
+  } else if (userChoice == "3") {
+    withDraw();
+  } else if (userChoice == "4") {
+    showTransctions();
+  } else if (userChoice == "5") {
+    changePin();
   }
 }
 
 checkBalance() {
-  for (var i = 0; i < userDetails.length; i++) {
-    if (userName == userDetails[i]["USER NAME"] &&
-        userPin == userDetails[i]["USER PIN"]) {
-      print("""
+  print("""
 
-========================================================
-Your current balance is: ${userDetails[i]["USER BALANCE"]}
-========================================================
+ =====================================================
+ Your Account Statement  
+ NAME :  ${userDetails[0]["USER NAME"]}
+ Pin : ${userDetails[0]["USER PIN"]}
+ CURRENT BALANCE :  ${userDetails[0]["USER BALANCE"]}
+ =====================================================
 
 """);
-    }
-  }
+  //   for (var i = 0; i < userDetails.length; i++) {
+  //     if (userName == userDetails[i]["USER NAME"] &&
+  //         userPin == userDetails[i]["USER PIN"]) {
+  //       print("""
+
+  // ========================================================
+  // Your current balance is: ${userDetails[i]["USER BALANCE"]}
+  // ========================================================
+
+  // """);
+  //     }
+  //   }
+  mainManu();
 }
 
 deposit() {
   print("ENTER AMOUNT TO DEPOSIT");
   num depositAmount = num.parse(stdin.readLineSync()!);
-  finalAmount = depositAmount + userDetails[0]["USER BALANCE"];
-  print("=> Deposit successful! New balance: $finalAmount");
-  transtions = userDetails[0]["USER TRANSTIONS"][0];
+
+  currentBalance = userDetails[0]["USER BALANCE"] + depositAmount;
+  userDetails[0]["USER BALANCE"] = currentBalance;
+
+  print("=> Deposit successful! New balance: $currentBalance");
+
+  transtions = List<Map<String, dynamic>>.from(userDetails[0]["USER TRANSTIONS"]);
   transtions.add({
     "type": "deposit",
     "amount": depositAmount,
     "time": now.toLocal(),
   });
-  return transtions;
+  userDetails[0]["USER TRANSTIONS"] = transtions;
+
+  mainManu();
 }
 
 withDraw() {
-  print("Enter amount to withdraw :");
+  print("Enter amount to withdraw:");
   num withDrawAmount = num.parse(stdin.readLineSync()!);
-  if (withDrawAmount > userDetails[0]["USER BALANCE"] ||
-      withDrawAmount > finalAmount) {
-    print("Not enough balance?");
-    exit(0);
+
+  num currentBalance = userDetails[0]["USER BALANCE"];
+
+  if (withDrawAmount > currentBalance) {
+    print("❌ Not enough balance.");
+    mainManu();
+    return;
   }
-  if (transtions.isEmpty) {
-    finalAmount = userDetails[0]["USER BALANCE"];
-    finalAmount -= withDrawAmount;
-  }
-  print("=> Withdrawal successful! New balance: $finalAmount");
+
+  currentBalance -= withDrawAmount;
+  userDetails[0]["USER BALANCE"] = currentBalance;
+
+  transtions = List<Map<String, dynamic>>.from(userDetails[0]["USER TRANSTIONS"]);
   transtions.add({
     "type": "withdraw",
     "amount": withDrawAmount,
     "time": now.toLocal(),
   });
+  userDetails[0]["USER TRANSTIONS"] = transtions;
+
+  print("✅ Withdrawal successful! New balance: $currentBalance");
+
+  mainManu();
 }
 
 showTransctions() {
@@ -265,4 +290,20 @@ showTransctions() {
   } else {
     print(transtions);
   }
+  mainManu();
+}
+
+changePin() {
+  print("Enter Old Pin :");
+  String? oldPin = stdin.readLineSync()!;
+  for (var i = 0; i < userDetails.length; i++) {
+    if (oldPin == userDetails[i]["USER PIN"]) {
+      print("Enter New Pin :");
+      userDetails[i]["USER PIN"] = stdin.readLineSync()!;
+      print("=> PIN changed successfully!");
+    } else {
+      print("Invalid PIN");
+    }
+  }
+  checkBalance();
 }
