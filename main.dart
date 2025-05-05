@@ -153,6 +153,8 @@ PRESS 2 FOR EXIT
   print("Enter your 4-digit PIN");
   userPin = stdin.readLineSync()!;
 
+  int loggedInIndex = -1;
+
   bool Found = false;
 
   for (var i = 0; i < userDetails.length; i++) {
@@ -166,6 +168,7 @@ PRESS 2 FOR EXIT
 
 """);
 
+      loggedInIndex = i;
       mainManu();
       Found = true;
       break;
@@ -221,18 +224,7 @@ checkBalance() {
  =====================================================
 
 """);
-  //   for (var i = 0; i < userDetails.length; i++) {
-  //     if (userName == userDetails[i]["USER NAME"] &&
-  //         userPin == userDetails[i]["USER PIN"]) {
-  //       print("""
 
-  // ========================================================
-  // Your current balance is: ${userDetails[i]["USER BALANCE"]}
-  // ========================================================
-
-  // """);
-  //     }
-  //   }
   mainManu();
 }
 
