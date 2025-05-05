@@ -1,7 +1,12 @@
-
 import 'dart:io';
 
 List<Map<String, dynamic>> userDetails = [];
+String userName = "";
+String userPin = "";
+num userBalance = 0;
+List<Map<String, dynamic>> transtions = [];
+DateTime now = DateTime.now();
+num finalAmount = 0;
 
 void main() {
   // ASSIGNMENT 04 DART PROJECT
@@ -10,7 +15,6 @@ void main() {
   // Console Based ATM Management System
 
   print("""
-
 
 
                     ====================================
@@ -42,14 +46,17 @@ void main() {
 
 signUp() {
   print("Enter Your Name");
-  String userName = stdin.readLineSync()!;
+  userName = stdin.readLineSync()!.toUpperCase();
 
   bool isTrue = true;
 
   print("Create a 4-digit PIN");
-  String userPin = stdin.readLineSync()!;
+  userPin = stdin.readLineSync()!;
 
   while (isTrue) {
+    if (userPin.length == 4) {
+      isTrue = false;
+    }
     if (userPin.length != 4) {
       print("❌ Invalid PIN! Please enter a 4-digit number.");
       String userPin = stdin.readLineSync()!;
@@ -59,30 +66,57 @@ signUp() {
     }
   }
 
-  
   print("Enter starting balance");
-  String userBalance = stdin.readLineSync()!;
-
+  userBalance = int.parse(stdin.readLineSync()!);
 
   userDetails.add({
     "USER NAME": userName,
     "USER PIN": userPin,
     "USER BALANCE": userBalance,
+    "USER TRANSTIONS": [],
   });
 
   print("""
-      =============================
-      Account created successfully!
-      =============================
+
+
+ =============================
+ Account created successfully!
+ =============================
+
+
     """);
 
-  print("transcations continue press 1");
-  print("EXIT press 2");
+  print("""
+=============================
+    LOGIN ACCOUNT Press 1
+=============================
+    """);
+  print("""
+==================================
+Check your Account Balance Press 2
+==================================
+    """);
+
+  print("""
+=============================
+       EXIT Press 3
+=============================
+    """);
 
   String userPress = stdin.readLineSync()!;
   if (userPress == "1") {
     login();
   } else if (userPress == "2") {
+    print("""
+
+ =====================================================
+ Your Account Statement  
+ NAME :  ${userDetails[0]["USER NAME"]}
+ CURRENT BALANCE :  ${userDetails[0]["USER BALANCE"]}
+ =====================================================
+
+""");
+  } else if (userPress == "3") {
     exit(0);
   } else {
     print("Invalid Option");
@@ -91,7 +125,7 @@ signUp() {
 
 login() {
   print("Enter your Name");
-  String userName = stdin.readLineSync()!;
+  userName = stdin.readLineSync()!.toUpperCase();
 
   if (userDetails.isEmpty) {
     print("""
@@ -116,27 +150,23 @@ PRESS 2 FOR EXIT
     }
   }
 
-  bool isTrue = true;
-
   print("Enter your 4-digit PIN");
-  String userPin = stdin.readLineSync()!;
-
-  while (isTrue) {
-    if (userPin.length != 4) {
-      print("❌ Invalid PIN! Please enter a 4-digit number.");
-      String userPin = stdin.readLineSync()!;
-      if (userPin.length == 4) {
-        isTrue = false;
-      }
-    }
-  }
+  userPin = stdin.readLineSync()!;
 
   bool Found = false;
 
   for (var i = 0; i < userDetails.length; i++) {
     if (userName == userDetails[i]["USER NAME"] &&
         userPin == userDetails[i]["USER PIN"]) {
-      print("Login Succesfull!");
+      print("""
+
+==========================
+   LOGIN SUCCES FULL!
+==========================
+
+""");
+
+      mainManu();
       Found = true;
       break;
     }
@@ -144,5 +174,95 @@ PRESS 2 FOR EXIT
 
   if (!Found) {
     print("Invalid username or PIN.");
+  }
+}
+
+mainManu() {
+  while (true) {
+    print("""
+
+Welcome, $userName!
+
+=> 1. Check Balance
+=> 2. Deposit Money
+=> 3. Withdraw Money
+=> 4. Show Transactions
+=> 5. Change PIN
+=> 6. Logout
+
+Enter your choice:
+
+""");
+    String userChoice = stdin.readLineSync()!;
+
+    if (userChoice == "6") {
+      print("logged Out");
+      exit(0);
+    } else if (userChoice == "1") {
+      checkBalance();
+    } else if (userChoice == "2") {
+      deposit();
+    } else if (userChoice == "3") {
+      withDraw();
+    } else if (userChoice == "4") {
+      showTransctions();
+    }
+  }
+}
+
+checkBalance() {
+  for (var i = 0; i < userDetails.length; i++) {
+    if (userName == userDetails[i]["USER NAME"] &&
+        userPin == userDetails[i]["USER PIN"]) {
+      print("""
+
+========================================================
+Your current balance is: ${userDetails[i]["USER BALANCE"]}
+========================================================
+
+""");
+    }
+  }
+}
+
+deposit() {
+  print("ENTER AMOUNT TO DEPOSIT");
+  num depositAmount = num.parse(stdin.readLineSync()!);
+  finalAmount = depositAmount + userDetails[0]["USER BALANCE"];
+  print("=> Deposit successful! New balance: $finalAmount");
+  transtions = userDetails[0]["USER TRANSTIONS"][0];
+  transtions.add({
+    "type": "deposit",
+    "amount": depositAmount,
+    "time": now.toLocal(),
+  });
+  return transtions;
+}
+
+withDraw() {
+  print("Enter amount to withdraw :");
+  num withDrawAmount = num.parse(stdin.readLineSync()!);
+  if (withDrawAmount > userDetails[0]["USER BALANCE"] ||
+      withDrawAmount > finalAmount) {
+    print("Not enough balance?");
+    exit(0);
+  }
+  if (transtions.isEmpty) {
+    finalAmount = userDetails[0]["USER BALANCE"];
+    finalAmount -= withDrawAmount;
+  }
+  print("=> Withdrawal successful! New balance: $finalAmount");
+  transtions.add({
+    "type": "withdraw",
+    "amount": withDrawAmount,
+    "time": now.toLocal(),
+  });
+}
+
+showTransctions() {
+  if (transtions.isEmpty) {
+    print("No transctions recorded");
+  } else {
+    print(transtions);
   }
 }
